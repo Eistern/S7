@@ -25,6 +25,7 @@ public class IndexControllerTests {
     public void testIndex() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
+                .andExpect(view().name("index"))
                 .andExpect(content().string(containsString("Welcome to Spring")));
     }
 }
