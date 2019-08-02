@@ -3,10 +3,17 @@
 <html lang="en">
 
 <body>
-<h1>Welcome to Spring, {{ name }}</h1>
-<textarea id="Name"></textarea>
-<textarea id="Number"></textarea>
-<button></button>
+<h1>Phone contacts:</h1>
+<br>
+<form id="creationForm" method="POST">
+    <label for="name">Name:
+        <input name="name" type="text"/>
+    </label>
+    <label for="phoneNumber">Phone number:
+        <input name="phoneNumber" type="text"/>
+    </label>
+    <input type="submit" value="Add new contact"/>
+</form>
 </body>
 
 </html>

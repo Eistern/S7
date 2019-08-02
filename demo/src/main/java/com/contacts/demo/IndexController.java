@@ -1,27 +1,38 @@
 package com.contacts.demo;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+import com.contacts.demo.data.NameRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.Valid;
+import java.util.logging.Logger;
 
-@Controller
-@RequestMapping("/")
+@RestController
+@RequestMapping(path = "/", produces = "application/json")
+@CrossOrigin
 public class IndexController {
+    private final Logger log = Logger.getLogger(IndexController.class.getName());
+    private NameRepository nameRepository;
 
     @GetMapping
-    public ModelAndView index() {
-        Map<String, String> model = new HashMap<>();
-        model.put("name", "User");
-        return new ModelAndView("index", model);
+    public String index() {
+        return "index";
+    }
+
+    @Autowired
+    public IndexController(NameRepository nameRepository) {
+        this.nameRepository = nameRepository;
     }
 
     @PostMapping
-    public String addEntry() {
-        return "index";
+    public NewContact addEntry(@Valid NewContact newContact, Errors errors) {
+        if (errors.hasErrors())
+            log.info("Input error");
+        else {
+            log.info("New contact created " + newContact);
+            nameRepository.save(newContact.getName());
+        }
+        return newContact;
     }
 }
