@@ -31,7 +31,7 @@ public class JdbcNameRepository implements IdRepository<Person> {
 
     @Override
     public Person findOne(Integer id) {
-        return jdbc.queryForObject("SELECT * FROM person WHERE id=?", this::mapRowToPerson, id);
+        return jdbc.queryForObject("SELECT * FROM public.person WHERE id=?", this::mapRowToPerson, id);
     }
 
     @Transactional
@@ -44,12 +44,13 @@ public class JdbcNameRepository implements IdRepository<Person> {
     @Transactional
     @Override
     public Person update(Integer id, Person updateEntity) {
-        return null;
+        jdbc.update("UPDATE public.person SET name=? WHERE id=?", updateEntity.getName(), id);
+        return updateEntity;
     }
 
     @Transactional
     @Override
     public void deleteById(Integer id) {
-
+        jdbc.update("DELETE FROM public.person WHERE id=?", id);
     }
 }

@@ -4,6 +4,7 @@ import com.contacts.demo.data.types.PhoneNumber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,19 +33,24 @@ public class JdbcNumberRepository implements IdRepository<PhoneNumber> {
         return jdbc.queryForObject("SELECT * FROM public.phonenumbers WHERE id=?", this::mapRowToNumber, id);
     }
 
+    @Transactional
     @Override
-    public PhoneNumber save(PhoneNumber name) {
-        jdbc.update("INSERT INTO public.phonenumbers VALUES (?, ?, ?)", name.getId(), name.getPerson_id(), name.getPhoneNumber());
-        return name;
+    public PhoneNumber save(PhoneNumber number) {
+        jdbc.update("INSERT INTO public.phonenumbers VALUES (?, ?, ?)", number.getId(), number.getPersonId(), number.getPhoneNumber());
+        return number;
     }
 
+    @Transactional
     @Override
     public PhoneNumber update(Integer id, PhoneNumber updateEntity) {
-        return null;
+        jdbc.update("UPDATE public.phonenumbers SET person_id=?, number=? WHERE id=?",
+                updateEntity.getPersonId(), updateEntity.getPhoneNumber(), id);
+        return updateEntity;
     }
 
+    @Transactional
     @Override
     public void deleteById(Integer id) {
-
+        jdbc.update("DELETE FROM public.phonenumbers WHERE id=?", id);
     }
 }
