@@ -1,6 +1,8 @@
 package com.contacts.demo.data;
 
 import com.contacts.demo.data.types.Person;
+import com.contacts.demo.data.types.PhoneNumber;
+import javafx.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -10,10 +12,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-//TODO implement method for SELECT name, number FROM person JOIN phonenumber ON person.id=phonenumber.person_id;
-
 @Repository
-public class JdbcNameRepository implements IdRepository<Person> {
+public class JdbcNameRepository implements IdRepository<Person>, CollapsingRepository<Person, PhoneNumber> {
     private JdbcTemplate jdbc;
     private Person mapRowToPerson(ResultSet result, int rowNum) throws SQLException {
         return new Person(  null,
@@ -23,6 +23,11 @@ public class JdbcNameRepository implements IdRepository<Person> {
     private Person mapRowToPrivatePerson(ResultSet result, int rowNum) throws SQLException {
         return new Person(  result.getInt("id"),
                             result.getString("name"));
+    }
+
+    private Pair<Person, PhoneNumber> mapRowToPair(ResultSet result, int rowNum) throws SQLException {
+        return new Pair<>(  new Person(result.getInt("person_id"), result.getString("name")),
+                            new PhoneNumber(null, result.getInt("person_id"), result.getString("number")));
     }
 
     @Autowired
@@ -70,5 +75,10 @@ public class JdbcNameRepository implements IdRepository<Person> {
     @Override
     public void deleteById(Integer id) {
         jdbc.update("DELETE FROM public.person WHERE id=?", id);
+    }
+
+    @Override
+    public Iterable<Pair<Person, PhoneNumber>> mergeData() {
+        return jdbc.query("SELECT name, number, person_id FROM person JOIN phonenumbers ON person.id=phonenumbers.person_id", this::mapRowToPair);
     }
 }
