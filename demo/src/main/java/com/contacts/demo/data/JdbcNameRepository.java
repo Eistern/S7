@@ -1,8 +1,10 @@
 package com.contacts.demo.data;
 
+import com.contacts.demo.data.types.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,11 +12,11 @@ import java.sql.SQLException;
 //TODO implement method for SELECT name, number FROM person JOIN phonenumber ON person.id=phonenumber.person_id;
 
 @Repository
-public class JdbcNameRepository implements NameRepository {
-    private static Integer id = 1;
+public class JdbcNameRepository implements IdRepository<Person> {
     private JdbcTemplate jdbc;
-    private String mapRowToString(ResultSet result, int rowNum) throws SQLException {
-        return result.getString("name");
+    private Person mapRowToPerson(ResultSet result, int rowNum) throws SQLException {
+        return new Person(  result.getInt("id"),
+                            result.getString("name"));
     }
 
     @Autowired
@@ -23,18 +25,31 @@ public class JdbcNameRepository implements NameRepository {
     }
 
     @Override
-    public Iterable<String> findAll() {
-        return jdbc.query("SELECT name FROM person", this::mapRowToString);
+    public Iterable<Person> findAll() {
+        return jdbc.query("SELECT * FROM public.person", this::mapRowToPerson);
     }
 
     @Override
-    public String findOne(String id) {
-        return jdbc.queryForObject("SELECT name FROM person WHERE id=?", this::mapRowToString, id);
+    public Person findOne(Integer id) {
+        return jdbc.queryForObject("SELECT * FROM person WHERE id=?", this::mapRowToPerson, id);
     }
 
+    @Transactional
     @Override
-    public String save(String name) {
-        jdbc.update("INSERT INTO person VALUES (?, ?)", (id++).toString(), name);
+    public Person save(Person name) {
+        jdbc.update("INSERT INTO public.person VALUES (?, ?)", name.getId(), name.getName());
         return name;
+    }
+
+    @Transactional
+    @Override
+    public Person update(Integer id, Person updateEntity) {
+        return null;
+    }
+
+    @Transactional
+    @Override
+    public void deleteById(Integer id) {
+
     }
 }
