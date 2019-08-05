@@ -31,7 +31,7 @@ public class NumberController {
 
     @GetMapping("/{id}")
     public PhoneNumber showNumberById(@PathVariable("id") Integer id) {
-        PhoneNumber result = numberRepository.findOne(id);
+        PhoneNumber result = numberRepository.findById(id);
         log.info("ShowNumberById executed with Id=" + id);
         return result;
     }

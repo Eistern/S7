@@ -31,7 +31,7 @@ public class PersonController {
 
     @GetMapping("/{id}")
     public Person showPersonById(@PathVariable("id") Integer id) {
-        Person result = nameRepository.findOne(id);
+        Person result = nameRepository.findById(id);
         log.info("ShowPersonById executed with id=" + id);
         return result;
     }

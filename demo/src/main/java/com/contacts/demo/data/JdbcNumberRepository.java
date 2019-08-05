@@ -12,9 +12,15 @@ import java.sql.SQLException;
 @Repository
 public class JdbcNumberRepository implements IdRepository<PhoneNumber> {
     private JdbcTemplate jdbc;
-    private PhoneNumber mapRowToNumber(ResultSet result, int rowNum) throws SQLException {
+    private PhoneNumber mapRowToPrivateNumber(ResultSet result, int rowNum) throws SQLException {
         return new PhoneNumber( result.getInt("id"),
                                 result.getInt("person_id"),
+                                result.getString("number"));
+    }
+
+    private PhoneNumber mapRowToNumber(ResultSet result, int rowNum) throws SQLException {
+        return new PhoneNumber( result.getInt("id"),
+                                null,
                                 result.getString("number"));
     }
 
@@ -25,12 +31,22 @@ public class JdbcNumberRepository implements IdRepository<PhoneNumber> {
 
     @Override
     public Iterable<PhoneNumber> findAll() {
-        return jdbc.query("SELECT * FROM public.phonenumbers", this::mapRowToNumber);
+        return jdbc.query("SELECT id, number FROM public.phonenumbers", this::mapRowToNumber);
     }
 
     @Override
-    public PhoneNumber findOne(Integer id) {
-        return jdbc.queryForObject("SELECT * FROM public.phonenumbers WHERE id=?", this::mapRowToNumber, id);
+    public Iterable<PhoneNumber> findByPid(Integer pid) {
+        return jdbc.query("SELECT * FROM public.phonenumbers WHERE person_id=?", this::mapRowToPrivateNumber, pid);
+    }
+
+    @Override
+    public Iterable<PhoneNumber> findSecureAll() {
+        return jdbc.query("SELECT * FROM public.phonenumbers", this::mapRowToPrivateNumber);
+    }
+
+    @Override
+    public PhoneNumber findById(Integer id) {
+        return jdbc.queryForObject("SELECT id, number FROM public.phonenumbers WHERE id=?", this::mapRowToNumber, id);
     }
 
     @Transactional

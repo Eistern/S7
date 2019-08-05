@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 //TODO implement method for SELECT name, number FROM person JOIN phonenumber ON person.id=phonenumber.person_id;
 
@@ -15,6 +16,11 @@ import java.sql.SQLException;
 public class JdbcNameRepository implements IdRepository<Person> {
     private JdbcTemplate jdbc;
     private Person mapRowToPerson(ResultSet result, int rowNum) throws SQLException {
+        return new Person(  null,
+                            result.getString("name"));
+    }
+
+    private Person mapRowToPrivatePerson(ResultSet result, int rowNum) throws SQLException {
         return new Person(  result.getInt("id"),
                             result.getString("name"));
     }
@@ -26,12 +32,24 @@ public class JdbcNameRepository implements IdRepository<Person> {
 
     @Override
     public Iterable<Person> findAll() {
-        return jdbc.query("SELECT * FROM public.person", this::mapRowToPerson);
+        return jdbc.query("SELECT name FROM public.person", this::mapRowToPerson);
     }
 
     @Override
-    public Person findOne(Integer id) {
-        return jdbc.queryForObject("SELECT * FROM public.person WHERE id=?", this::mapRowToPerson, id);
+    public Iterable<Person> findByPid(Integer pid) {
+        ArrayList<Person> result = new ArrayList<>();
+        result.add(findById(pid));
+        return result;
+    }
+
+    @Override
+    public Iterable<Person> findSecureAll() {
+        return jdbc.query("SELECT * FROM public.person", this::mapRowToPrivatePerson);
+    }
+
+    @Override
+    public Person findById(Integer id) {
+        return jdbc.queryForObject("SELECT * FROM public.person WHERE id=?", this::mapRowToPrivatePerson, id);
     }
 
     @Transactional
