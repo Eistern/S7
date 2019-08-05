@@ -13,6 +13,6 @@ public class Person {
     private Integer id = UUID.randomUUID().hashCode();
 
     @NotNull
-    @Size(min = 1, message = "Contact name must consist at least 1 symbol")
+    @Size(min = 1, message = "Contact name must consist from 1 to 255 symbols", max = 255)
     private String name;
 }
