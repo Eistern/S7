@@ -24,8 +24,9 @@ public class Person implements Serializable {
 
     @NotNull
     @Size(min = 1, message = "Contact name must consist from 1 to 255 symbols", max = 255)
-    private final String name;
+    private String name;
 
+    @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
     private List<PhoneNumber> phoneNumbers;
 }

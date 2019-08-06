@@ -1,15 +1,17 @@
 package com.contacts.demo.controllers;
 
+import com.contacts.demo.data.JpaNameRepository;
 import com.contacts.demo.data.JpaNumberRepository;
-import com.contacts.demo.data.jdbcRepositories.IdRepository;
 import com.contacts.demo.data.types.PhoneNumber;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -17,14 +19,14 @@ import java.util.logging.Logger;
 @RequestMapping(path = "/number", produces = "application/json")
 @CrossOrigin
 public class NumberController {
-    private final IdRepository<PhoneNumber> numberRepository;
     private final JpaNumberRepository numberRepositoryJPA;
+    private final JpaNameRepository nameRepositoryJPA;
     private final Logger log = Logger.getLogger(NumberController.class.getName());
 
     @Autowired
-    public NumberController(IdRepository<PhoneNumber> numberRepository, JpaNumberRepository jpaNumberRepository) {
-        this.numberRepository = numberRepository;
+    public NumberController(JpaNameRepository jpaNameRepository, JpaNumberRepository jpaNumberRepository) {
         this.numberRepositoryJPA = jpaNumberRepository;
+        this.nameRepositoryJPA = jpaNameRepository;
     }
 
     @GetMapping
@@ -50,14 +52,26 @@ public class NumberController {
         return newNumber;
     }
 
-    //TODO
+    @Transactional
     @PatchMapping(path = "/{id}", consumes = "application/json")
-    public ResponseEntity<PhoneNumber> editNumber(@PathVariable("id") Integer id, @RequestBody PhoneNumber newNumber) {
-        if (!id.equals(newNumber.getId()))
+    public ResponseEntity<PhoneNumber> editNumber(@PathVariable("id") Integer id, @RequestBody @NotEmpty PhoneNumber newNumber) {
+        if (!numberRepositoryJPA.existsById(id))
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (newNumber.getPersonId() != null && !nameRepositoryJPA.existsById(newNumber.getPersonId()))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        numberRepository.update(id, newNumber);
-        log.info("EditNumber executed. Id=" + id + " updated. Now: " + newNumber);
-        return new ResponseEntity<>(newNumber, HttpStatus.OK);
+
+        PhoneNumber editableNumber = numberRepositoryJPA.findById(id).get();
+        String correctedNumber = editableNumber.getPhoneNumber().trim();
+        editableNumber.setPhoneNumber(correctedNumber);
+
+        if (newNumber.getPersonId() != null)
+            editableNumber.setPersonId(newNumber.getPersonId());
+        if (newNumber.getPhoneNumber() != null)
+            editableNumber.setPhoneNumber(newNumber.getPhoneNumber());
+        PhoneNumber resultedNumber = numberRepositoryJPA.save(editableNumber);
+
+        log.info("EditNumber executed. Id=" + id + " updated. Now: " + resultedNumber);
+        return new ResponseEntity<>(resultedNumber, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
