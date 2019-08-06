@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = "/personal", produces = "application/json")
-public class PersonalDataController {
+@RequestMapping(path = "/private", produces = "application/json")
+public class PrivateDataController {
     private CollapsingRepository<Person, PhoneNumber> merged;
     private IdRepository<Person> personRepository;
     private IdRepository<PhoneNumber> numberRepository;
 
     @Autowired
-    public PersonalDataController(IdRepository<Person> personRepository, IdRepository<PhoneNumber> numberRepository, CollapsingRepository<Person, PhoneNumber> merged) {
+    public PrivateDataController(IdRepository<Person> personRepository, IdRepository<PhoneNumber> numberRepository, CollapsingRepository<Person, PhoneNumber> merged) {
         this.numberRepository = numberRepository;
         this.personRepository = personRepository;
         this.merged = merged;

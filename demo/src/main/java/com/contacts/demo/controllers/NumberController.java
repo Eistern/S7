@@ -36,15 +36,15 @@ public class NumberController {
         return result;
     }
 
-    @PostMapping
-    public PhoneNumber addNumber(@Valid PhoneNumber newNumber) {
+    @PostMapping(consumes = "application/json")
+    public PhoneNumber addNumber(@RequestBody @Valid PhoneNumber newNumber) {
         numberRepository.save(newNumber);
         log.info("AddNumber executed " + newNumber + " added");
         return newNumber;
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<PhoneNumber> editNumber(@PathVariable("id") Integer id, @Valid PhoneNumber newNumber) {
+    @PatchMapping(path = "/{id}", consumes = "application/json")
+    public ResponseEntity<PhoneNumber> editNumber(@PathVariable("id") Integer id, @RequestBody @Valid PhoneNumber newNumber) {
         if (!id.equals(newNumber.getId()))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         numberRepository.update(id, newNumber);

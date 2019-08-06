@@ -36,15 +36,15 @@ public class PersonController {
         return result;
     }
 
-    @PostMapping
-    public Person addPerson(@Valid Person newPerson) {
+    @PostMapping(consumes = "application/json")
+    public Person addPerson(@RequestBody @Valid Person newPerson) {
         nameRepository.save(newPerson);
         log.info("AddPerson executed. " + newPerson + " added");
         return newPerson;
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<Person> editPerson(@PathVariable("id") Integer id, @Valid Person newPerson) {
+    @PatchMapping(path = "/{id}", consumes = "application/json")
+    public ResponseEntity<Person> editPerson(@PathVariable("id") Integer id, @RequestBody @Valid Person newPerson) {
         if (!id.equals(newPerson.getId()))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         nameRepository.update(id, newPerson);
