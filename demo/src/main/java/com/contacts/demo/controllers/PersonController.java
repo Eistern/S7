@@ -1,6 +1,7 @@
 package com.contacts.demo.controllers;
 
-import com.contacts.demo.data.IdRepository;
+import com.contacts.demo.data.jdbcRepositories.IdRepository;
+import com.contacts.demo.data.JpaNameRepository;
 import com.contacts.demo.data.types.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,16 +16,18 @@ import java.util.logging.Logger;
 @CrossOrigin("*")
 public class PersonController {
     private final IdRepository<Person> nameRepository;
+    private final JpaNameRepository nameRepositoryJPA;
     private final Logger log = Logger.getLogger(PersonController.class.getName());
 
     @Autowired
-    public PersonController(IdRepository<Person> nameRepository) {
+    public PersonController(IdRepository<Person> nameRepository, JpaNameRepository nameRepositoryJPA) {
         this.nameRepository = nameRepository;
+        this.nameRepositoryJPA = nameRepositoryJPA;
     }
 
     @GetMapping
     public Iterable<Person> showPersons() {
-        Iterable<Person> result = nameRepository.findAll();
+        Iterable<Person> result = nameRepositoryJPA.findAll();
         log.info("ShowPersons executed");
         return result;
     }
@@ -38,14 +41,15 @@ public class PersonController {
 
     @PostMapping(consumes = "application/json")
     public Person addPerson(@RequestBody @Valid Person newPerson) {
-        nameRepository.save(newPerson);
+        nameRepositoryJPA.save(newPerson);
         log.info("AddPerson executed. " + newPerson + " added");
         return newPerson;
     }
 
+    //TODO
     @PatchMapping(path = "/{id}", consumes = "application/json")
-    public ResponseEntity<Person> editPerson(@PathVariable("id") Integer id, @RequestBody @Valid Person newPerson) {
-        if (!id.equals(newPerson.getId()))
+    public ResponseEntity<Person> editPerson(@PathVariable("id") Integer id, @RequestBody Person newPerson) {
+        if (!id.equals(newPerson.getPersonId()) || !nameRepositoryJPA.existsById(id))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         nameRepository.update(id, newPerson);
         log.info("EditPerson executed. Id=" + id + " updated. Now :" + newPerson);
@@ -54,7 +58,7 @@ public class PersonController {
 
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable("id") Integer id) {
-        nameRepository.deleteById(id);
+        nameRepositoryJPA.deleteById(id);
         log.info("DeleteById executed. Id=" + id + " deleted");
     }
 }

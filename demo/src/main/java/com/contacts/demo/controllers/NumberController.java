@@ -1,13 +1,16 @@
 package com.contacts.demo.controllers;
 
-import com.contacts.demo.data.IdRepository;
+import com.contacts.demo.data.JpaNumberRepository;
+import com.contacts.demo.data.jdbcRepositories.IdRepository;
 import com.contacts.demo.data.types.PhoneNumber;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.NumberFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @RestController
@@ -15,36 +18,41 @@ import java.util.logging.Logger;
 @CrossOrigin
 public class NumberController {
     private final IdRepository<PhoneNumber> numberRepository;
+    private final JpaNumberRepository numberRepositoryJPA;
     private final Logger log = Logger.getLogger(NumberController.class.getName());
 
     @Autowired
-    public NumberController(IdRepository<PhoneNumber> numberRepository) {
+    public NumberController(IdRepository<PhoneNumber> numberRepository, JpaNumberRepository jpaNumberRepository) {
         this.numberRepository = numberRepository;
+        this.numberRepositoryJPA = jpaNumberRepository;
     }
 
     @GetMapping
     public Iterable<PhoneNumber> showNumbers() {
-        Iterable<PhoneNumber> result = numberRepository.findAll();
+        Iterable<PhoneNumber> result = numberRepositoryJPA.findAll();
         log.info("ShowNumbers executed");
         return result;
     }
 
     @GetMapping("/{id}")
-    public PhoneNumber showNumberById(@PathVariable("id") Integer id) {
-        PhoneNumber result = numberRepository.findById(id);
+    public ResponseEntity<PhoneNumber> showNumberById(@PathVariable("id") @NumberFormat Integer id) {
+        Optional<PhoneNumber> result;
+        if ((result = numberRepositoryJPA.findById(id)).isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         log.info("ShowNumberById executed with Id=" + id);
-        return result;
+        return new ResponseEntity<>(result.get(), HttpStatus.OK);
     }
 
     @PostMapping(consumes = "application/json")
     public PhoneNumber addNumber(@RequestBody @Valid PhoneNumber newNumber) {
-        numberRepository.save(newNumber);
+        numberRepositoryJPA.save(newNumber);
         log.info("AddNumber executed " + newNumber + " added");
         return newNumber;
     }
 
+    //TODO
     @PatchMapping(path = "/{id}", consumes = "application/json")
-    public ResponseEntity<PhoneNumber> editNumber(@PathVariable("id") Integer id, @RequestBody @Valid PhoneNumber newNumber) {
+    public ResponseEntity<PhoneNumber> editNumber(@PathVariable("id") Integer id, @RequestBody PhoneNumber newNumber) {
         if (!id.equals(newNumber.getId()))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         numberRepository.update(id, newNumber);
@@ -54,7 +62,7 @@ public class NumberController {
 
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable("id") Integer id) {
-        numberRepository.deleteById(id);
+        numberRepositoryJPA.deleteById(id);
         log.info("DeleteById executed. Id=" + id + " deleted");
     }
 }

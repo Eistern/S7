@@ -1,7 +1,7 @@
 package com.contacts.demo;
 
-import com.contacts.demo.data.IdRepository;
-import com.contacts.demo.data.JdbcNameRepository;
+import com.contacts.demo.data.jdbcRepositories.IdRepository;
+import com.contacts.demo.data.jdbcRepositories.JdbcNameRepository;
 import com.contacts.demo.data.types.Person;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +19,7 @@ public class NameRepositoryTests {
     public void testFind() {
         Person result = nameRepository.findById(0);
         assert result != null;
-        assert result.getId().equals(0);
+        assert result.getPersonId().equals(0);
         assert result.getName().endsWith("Tester");
     }
 }

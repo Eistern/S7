@@ -1,4 +1,4 @@
-package com.contacts.demo.data;
+package com.contacts.demo.data.jdbcRepositories;
 
 import com.contacts.demo.data.types.Person;
 import com.contacts.demo.data.types.PhoneNumber;
@@ -16,18 +16,21 @@ import java.util.ArrayList;
 public class JdbcNameRepository implements IdRepository<Person>, CollapsingRepository<Person, PhoneNumber> {
     private JdbcTemplate jdbc;
     private Person mapRowToPerson(ResultSet result, int rowNum) throws SQLException {
-        return new Person(  null,
-                            result.getString("name"));
+//        return new Person(  null,
+//                            result.getString("name"));
+        return null;
     }
 
     private Person mapRowToPrivatePerson(ResultSet result, int rowNum) throws SQLException {
-        return new Person(  result.getInt("id"),
-                            result.getString("name"));
+//        return new Person(  result.getInt("id"),
+//                            result.getString("name"));
+        return null;
     }
 
     private Pair<Person, PhoneNumber> mapRowToPair(ResultSet result, int rowNum) throws SQLException {
-        return new Pair<>(  new Person(result.getInt("person_id"), result.getString("name")),
-                            new PhoneNumber(null, result.getInt("person_id"), result.getString("number")));
+//        return new Pair<>(  new Person(result.getInt("person_id"), result.getString("name")),
+//                            new PhoneNumber(null, result.getInt("person_id"), result.getString("number")));
+        return null;
     }
 
     @Autowired
@@ -37,7 +40,7 @@ public class JdbcNameRepository implements IdRepository<Person>, CollapsingRepos
 
     @Override
     public Iterable<Person> findAll() {
-        return jdbc.query("SELECT name FROM public.person", this::mapRowToPerson);
+        return jdbc.query("SELECT name FROM public.persons", this::mapRowToPerson);
     }
 
     @Override
@@ -49,36 +52,36 @@ public class JdbcNameRepository implements IdRepository<Person>, CollapsingRepos
 
     @Override
     public Iterable<Person> findSecureAll() {
-        return jdbc.query("SELECT * FROM public.person", this::mapRowToPrivatePerson);
+        return jdbc.query("SELECT * FROM public.persons", this::mapRowToPrivatePerson);
     }
 
     @Override
     public Person findById(Integer id) {
-        return jdbc.queryForObject("SELECT * FROM public.person WHERE id=?", this::mapRowToPrivatePerson, id);
+        return jdbc.queryForObject("SELECT * FROM public.persons WHERE person_id=?", this::mapRowToPrivatePerson, id);
     }
 
     @Transactional
     @Override
     public Person save(Person name) {
-        jdbc.update("INSERT INTO public.person VALUES (?, ?)", name.getId(), name.getName());
+        jdbc.update("INSERT INTO public.persons VALUES (?, ?)", name.getPersonId(), name.getName());
         return name;
     }
 
     @Transactional
     @Override
     public Person update(Integer id, Person updateEntity) {
-        jdbc.update("UPDATE public.person SET name=? WHERE id=?", updateEntity.getName(), id);
+        jdbc.update("UPDATE public.persons SET name=? WHERE person_id=?", updateEntity.getName(), id);
         return updateEntity;
     }
 
     @Transactional
     @Override
     public void deleteById(Integer id) {
-        jdbc.update("DELETE FROM public.person WHERE id=?", id);
+        jdbc.update("DELETE FROM public.persons WHERE person_id=?", id);
     }
 
     @Override
     public Iterable<Pair<Person, PhoneNumber>> mergeData() {
-        return jdbc.query("SELECT name, number, person_id FROM person JOIN phonenumbers ON person.id=phonenumbers.person_id", this::mapRowToPair);
+        return jdbc.query("SELECT name, number, person_id FROM persons JOIN phonenumbers ON persons.person_id=phonenumbers.person_id", this::mapRowToPair);
     }
 }

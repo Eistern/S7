@@ -1,4 +1,4 @@
-package com.contacts.demo.data;
+package com.contacts.demo.data.jdbcRepositories;
 
 public interface IdRepository<T> {
     Iterable<T> findAll();

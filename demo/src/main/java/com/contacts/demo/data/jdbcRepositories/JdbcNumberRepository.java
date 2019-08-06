@@ -1,4 +1,4 @@
-package com.contacts.demo.data;
+package com.contacts.demo.data.jdbcRepositories;
 
 import com.contacts.demo.data.types.PhoneNumber;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,15 +13,17 @@ import java.sql.SQLException;
 public class JdbcNumberRepository implements IdRepository<PhoneNumber> {
     private JdbcTemplate jdbc;
     private PhoneNumber mapRowToPrivateNumber(ResultSet result, int rowNum) throws SQLException {
-        return new PhoneNumber( result.getInt("id"),
-                                result.getInt("person_id"),
-                                result.getString("number"));
+//        return new PhoneNumber( result.getInt("id"),
+//                                result.getInt("person_id"),
+//                                result.getString("number"));
+        return null;
     }
 
     private PhoneNumber mapRowToNumber(ResultSet result, int rowNum) throws SQLException {
-        return new PhoneNumber( result.getInt("id"),
-                                null,
-                                result.getString("number"));
+//        return new PhoneNumber( result.getInt("id"),
+//                                null,
+//                                result.getString("number"));
+        return null;
     }
 
     @Autowired
@@ -31,7 +33,7 @@ public class JdbcNumberRepository implements IdRepository<PhoneNumber> {
 
     @Override
     public Iterable<PhoneNumber> findAll() {
-        return jdbc.query("SELECT id, number FROM public.phonenumbers", this::mapRowToNumber);
+        return jdbc.query("SELECT phone_id, number FROM public.phonenumbers", this::mapRowToNumber);
     }
 
     @Override
@@ -46,7 +48,7 @@ public class JdbcNumberRepository implements IdRepository<PhoneNumber> {
 
     @Override
     public PhoneNumber findById(Integer id) {
-        return jdbc.queryForObject("SELECT id, number FROM public.phonenumbers WHERE id=?", this::mapRowToNumber, id);
+        return jdbc.queryForObject("SELECT phone_id, number FROM public.phonenumbers WHERE phone_id=?", this::mapRowToNumber, id);
     }
 
     @Transactional
@@ -59,7 +61,7 @@ public class JdbcNumberRepository implements IdRepository<PhoneNumber> {
     @Transactional
     @Override
     public PhoneNumber update(Integer id, PhoneNumber updateEntity) {
-        jdbc.update("UPDATE public.phonenumbers SET person_id=?, number=? WHERE id=?",
+        jdbc.update("UPDATE public.phonenumbers SET person_id=?, number=? WHERE phone_id=?",
                 updateEntity.getPersonId(), updateEntity.getPhoneNumber(), id);
         return updateEntity;
     }
@@ -67,6 +69,6 @@ public class JdbcNumberRepository implements IdRepository<PhoneNumber> {
     @Transactional
     @Override
     public void deleteById(Integer id) {
-        jdbc.update("DELETE FROM public.phonenumbers WHERE id=?", id);
+        jdbc.update("DELETE FROM public.phonenumbers WHERE phone_id=?", id);
     }
 }
