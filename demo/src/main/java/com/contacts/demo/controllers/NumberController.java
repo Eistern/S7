@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 @RestController
 @RequestMapping(path = "/number", produces = "application/json")
-@CrossOrigin
+@CrossOrigin("*")
 public class NumberController {
     private final JpaNumberRepository numberRepositoryJPA;
     private final JpaNameRepository nameRepositoryJPA;

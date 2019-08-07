@@ -54,7 +54,7 @@ public class JdbcNumberRepository implements IdRepository<PhoneNumber> {
     @Transactional
     @Override
     public PhoneNumber save(PhoneNumber number) {
-        jdbc.update("INSERT INTO public.phonenumbers VALUES (?, ?, ?)", number.getId(), number.getPersonId(), number.getPhoneNumber());
+        jdbc.update("INSERT INTO public.phonenumbers VALUES (?, ?, ?)", number.getPhoneId(), number.getPersonId(), number.getPhoneNumber());
         return number;
     }
 

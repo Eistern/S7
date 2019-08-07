@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Table(name = "phonenumbers", schema = "public")
 public class PhoneNumber implements Serializable {
     public PhoneNumber(Integer personId, String phoneNumber) {
-        this.id = null;
+        this.phoneId = null;
         this.personId = personId;
         this.phoneNumber = phoneNumber;
     }
@@ -21,7 +21,7 @@ public class PhoneNumber implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "phone_id")
-    private final Integer id;
+    private final Integer phoneId;
 
     @NotNull
     @Column(name = "person_id")
@@ -35,4 +35,9 @@ public class PhoneNumber implements Serializable {
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false, insertable = false, updatable = false)
     private Person owner;
+
+    @Override
+    public String toString() {
+        return "[id:" + phoneId + ", personId:" + personId + ", owner:" + owner.getName() + "]";
+    }
 }
