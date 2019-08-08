@@ -1,6 +1,8 @@
 package com.contacts.demo.security.data.types;
 
+import com.contacts.demo.data.types.Person;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -37,7 +39,11 @@ public class User implements Serializable {
     @JoinTable( name = "auth_roles",
                 joinColumns = {@JoinColumn(name = "uid", referencedColumnName = "uid")},
                 inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "role_id")})
+    @JsonIgnore
     private List<Role> roles;
+
+    @OneToMany(mappedBy = "uid")
+    private List<Person> personList;
 
     @Override
     public String toString() {
@@ -48,6 +54,7 @@ public class User implements Serializable {
         buffer.append("roles:[");
         roles.forEach(role -> buffer.append(role.getRoleName()).append(", "));
         buffer.append("]]");
+        buffer.append(personList);
         return buffer.toString();
     }
 

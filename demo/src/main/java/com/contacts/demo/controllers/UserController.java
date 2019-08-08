@@ -4,7 +4,6 @@ import com.contacts.demo.security.RoleHelper;
 import com.contacts.demo.security.data.JpaUserRepository;
 import com.contacts.demo.security.data.types.Role;
 import com.contacts.demo.security.data.types.User;
-import com.contacts.demo.security.data.types.UserEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +27,15 @@ public class UserController {
         this.roleHelper = roleHelper;
     }
 
+    @GetMapping
+    public String plugMethod() {
+        return "You can authorize or register by /user/login or /user/register";
+    }
+
+    @GetMapping(path = "/list")
+    public Iterable<User> users() {
+        return userRepository.findAll();
+    }
 
     @PostMapping(path = "/login", consumes = "application/json")
     public String loginRequest() {
@@ -35,7 +43,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/register", consumes = "application/json")
-    public ResponseEntity<String> registerRequest (@RequestBody @Valid User user) {
+    public ResponseEntity<String> registerRequest(@RequestBody @Valid User user) {
         if (userRepository.existsByUsername(user.getUsername()))
             return new ResponseEntity<>("Username already taken", HttpStatus.BAD_REQUEST);
 
@@ -44,6 +52,8 @@ public class UserController {
         userRepository.save(user);
         User createdUser = userRepository.findByUsername(user.getUsername()).get();
         roleHelper.addRoleTo(createdUser.getUserId(), Role.Roles.USER_ROLE);
+//        Integer returnedUID = userRepository.returnValue(user.getUsername(), user.getPassword());
+//        roleHelper.addRoleTo(returnedUID, Role.Roles.USER_ROLE);
         return new ResponseEntity<>("User created", HttpStatus.OK);
     }
 }
