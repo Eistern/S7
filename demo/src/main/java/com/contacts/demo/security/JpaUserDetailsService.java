@@ -13,11 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Service
-public class UserInfoService implements UserDetailsService {
+public class JpaUserDetailsService implements UserDetailsService {
     private JpaUserRepository userRepository;
 
     @Autowired
-    public UserInfoService(JpaUserRepository userRepository) {
+    public JpaUserDetailsService(JpaUserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

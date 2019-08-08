@@ -22,12 +22,11 @@ public class RoleHelper {
 
     public UserRole addRoleTo(Integer uid, Role.Roles role) {
         Optional<Role> foundRole = roleRepository.findByRoleName(role.toString());
-        if (foundRole.isEmpty()) {
-            roleRepository.save(new Role(null, role.toString(), null));
-            foundRole = roleRepository.findByRoleName(role.toString());
-            if (foundRole.isEmpty())
-                throw new Error("Internal database error");
-        }
-        return roleLinkRepository.save(new UserRole(null, uid, foundRole.get().getRoleId()));
+        Role resultRole;
+        if (foundRole.isEmpty())
+            resultRole = roleRepository.save(new Role(null, role.toString(), null));
+        else
+            resultRole = foundRole.get();
+        return roleLinkRepository.save(new UserRole(null, uid, resultRole.getRoleId()));
     }
 }
