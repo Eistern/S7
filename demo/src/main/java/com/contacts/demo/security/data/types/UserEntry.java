@@ -13,6 +13,8 @@ import java.util.List;
 @Data
 @RequiredArgsConstructor
 public class UserEntry implements UserDetails {
+    @NotEmpty
+    private final Integer uid;
 
     @NotEmpty
     private final String username;

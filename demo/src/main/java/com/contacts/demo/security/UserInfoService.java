@@ -29,8 +29,8 @@ public class UserInfoService implements UserDetailsService {
             throw new UsernameNotFoundException(s);
         User foundUser = user.get();
 
-        UserEntry userDetails = new UserEntry(foundUser.getUsername());
-        userDetails.setPassword(foundUser.getPassword().trim());
+        UserEntry userDetails = new UserEntry(foundUser.getUserId(), foundUser.getUsername());
+        userDetails.setPassword(foundUser.getPassword());
         userDetails.setUserAuthorities(foundUser.getStringRoles());
 
         return userDetails;

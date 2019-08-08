@@ -1,5 +1,6 @@
 package com.contacts.demo.security;
 
+import com.contacts.demo.security.data.types.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +44,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 and().
                 csrf().disable().
                 authorizeRequests().
-                    antMatchers("/", "/user/**").anonymous().
+                    antMatchers("/user/list").hasAuthority(Role.Roles.ADMIN_ROLE.toString()).
+                    antMatchers("/", "/user/**").permitAll().
                     anyRequest().authenticated();
     }
 }

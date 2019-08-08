@@ -3,10 +3,12 @@ package com.contacts.demo.controllers;
 import com.contacts.demo.data.JpaNameRepository;
 import com.contacts.demo.data.JpaNumberRepository;
 import com.contacts.demo.data.types.PhoneNumber;
+import com.contacts.demo.security.data.types.UserEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,16 +32,16 @@ public class NumberController {
     }
 
     @GetMapping
-    public Iterable<PhoneNumber> showNumbers() {
-        Iterable<PhoneNumber> result = numberRepositoryJPA.findAll();
+    public Iterable<PhoneNumber> showNumbers(@AuthenticationPrincipal UserEntry userEntry) {
+        Iterable<PhoneNumber> result = numberRepositoryJPA.findAllByOwnerUid(userEntry.getUid());
         log.info("ShowNumbers executed");
         return result;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PhoneNumber> showNumberById(@PathVariable("id") @NumberFormat Integer id) {
-        Optional<PhoneNumber> result;
-        if ((result = numberRepositoryJPA.findById(id)).isEmpty())
+    public ResponseEntity<PhoneNumber> showNumberById(@PathVariable("id") @NumberFormat Integer id, @AuthenticationPrincipal UserEntry userEntry) {
+        Optional<PhoneNumber> result = numberRepositoryJPA.findByPhoneIdAndOwnerUid(id, userEntry.getUid());
+        if (result.isEmpty())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         log.info("ShowNumberById executed with Id=" + id);
         return new ResponseEntity<>(result.get(), HttpStatus.OK);
@@ -54,18 +56,20 @@ public class NumberController {
 
     @Transactional
     @PatchMapping(path = "/{id}", consumes = "application/json")
-    public ResponseEntity<PhoneNumber> editNumber(@PathVariable("id") Integer id, @RequestBody @NotEmpty PhoneNumber newNumber) {
-        if (!numberRepositoryJPA.existsById(id))
+    public ResponseEntity<PhoneNumber> editNumber(@PathVariable("id") @NumberFormat Integer id, @RequestBody @NotEmpty PhoneNumber newNumber, @AuthenticationPrincipal UserEntry userEntry) {
+        Optional<PhoneNumber> foundNumber = numberRepositoryJPA.findByPhoneIdAndOwnerUid(id, userEntry.getUid());
+        if (foundNumber.isEmpty())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        if (newNumber.getPersonId() != null && !nameRepositoryJPA.existsById(newNumber.getPersonId()))
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        PhoneNumber editableNumber = numberRepositoryJPA.findById(id).get();
-        String correctedNumber = editableNumber.getPhoneNumber().trim();
+        PhoneNumber editableNumber = foundNumber.get();
+        String correctedNumber = editableNumber.getPhoneNumber();
         editableNumber.setPhoneNumber(correctedNumber);
 
-        if (newNumber.getPersonId() != null)
+        if (newNumber.getPersonId() != null && !nameRepositoryJPA.existsByPersonIdAndUid(newNumber.getPersonId(), userEntry.getUid()))
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        else
             editableNumber.setPersonId(newNumber.getPersonId());
+
         if (newNumber.getPhoneNumber() != null)
             editableNumber.setPhoneNumber(newNumber.getPhoneNumber());
         PhoneNumber resultedNumber = numberRepositoryJPA.save(editableNumber);
@@ -75,8 +79,11 @@ public class NumberController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteById(@PathVariable("id") Integer id) {
+    public ResponseEntity deleteById(@PathVariable("id") @NumberFormat Integer id, @AuthenticationPrincipal UserEntry userEntry) {
+        if (numberRepositoryJPA.existsByPhoneIdAndOwnerUid(id, userEntry.getUid()))
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         numberRepositoryJPA.deleteById(id);
         log.info("DeleteById executed. Id=" + id + " deleted");
+        return new ResponseEntity(HttpStatus.OK);
     }
 }

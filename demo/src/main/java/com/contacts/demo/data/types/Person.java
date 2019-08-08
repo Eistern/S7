@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -25,6 +26,10 @@ public class Person implements Serializable {
     @NotNull
     @Size(min = 1, message = "Contact name must consist from 1 to 255 symbols", max = 255)
     private String name;
+
+    @Column(name = "uid")
+    @JoinColumn(name = "uid", referencedColumnName = "uid", table = "auth")
+    private Integer uid;
 
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")

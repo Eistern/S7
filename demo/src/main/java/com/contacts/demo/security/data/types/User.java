@@ -1,6 +1,9 @@
 package com.contacts.demo.security.data.types;
 
+import com.contacts.demo.data.types.Person;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -31,13 +34,18 @@ public class User implements Serializable {
 
     @NotEmpty
     @Column(name = "pwd")
+    @JsonIgnore
     private String password;
 
     @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable( name = "auth_roles",
                 joinColumns = {@JoinColumn(name = "uid", referencedColumnName = "uid")},
                 inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "role_id")})
+    @JsonManagedReference
     private List<Role> roles;
+
+    @OneToMany(mappedBy = "uid")
+    private List<Person> personList;
 
     @Override
     public String toString() {
@@ -48,9 +56,11 @@ public class User implements Serializable {
         buffer.append("roles:[");
         roles.forEach(role -> buffer.append(role.getRoleName()).append(", "));
         buffer.append("]]");
+        buffer.append(personList);
         return buffer.toString();
     }
 
+    @JsonIgnore
     public List<String> getStringRoles() {
         List<String> result = new ArrayList<>();
         roles.forEach(role -> result.add(role.getRoleName()));
