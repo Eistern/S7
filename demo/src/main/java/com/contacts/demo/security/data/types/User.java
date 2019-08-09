@@ -3,6 +3,7 @@ package com.contacts.demo.security.data.types;
 import com.contacts.demo.data.types.Person;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -33,6 +34,7 @@ public class User implements Serializable {
 
     @NotEmpty
     @Column(name = "pwd")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @ManyToMany(cascade = CascadeType.MERGE)

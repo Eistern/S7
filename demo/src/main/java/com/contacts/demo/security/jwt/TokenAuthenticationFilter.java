@@ -32,7 +32,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         if (token == null) {
             String headerToken = httpServletRequest.getHeader("Authorization");
-            if (headerToken != null && headerToken.startsWith("Bearer "))
+            if (headerToken == null) {
+                filterChain.doFilter(httpServletRequest, httpServletResponse);
+                return;
+            }
+            if (headerToken.startsWith("Bearer "))
                 token = headerToken.substring(7);
         }
 

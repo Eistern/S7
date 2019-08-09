@@ -38,6 +38,6 @@ public class PhoneNumber implements Serializable {
 
     @Override
     public String toString() {
-        return "[id:" + phoneId + ", personId:" + personId + ", owner:" + owner.getName() + "]";
+        return "[id:" + phoneId + ", personId:" + personId + ", owner:" + ((owner != null) ? owner.getName() : "null") + "]";
     }
 }

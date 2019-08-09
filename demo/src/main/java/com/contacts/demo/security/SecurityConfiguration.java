@@ -1,6 +1,7 @@
 package com.contacts.demo.security;
 
 import com.contacts.demo.security.data.types.Role;
+import com.contacts.demo.security.jwt.NoAuthenticationEntryPoint;
 import com.contacts.demo.security.jwt.TokenAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -19,11 +20,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final JpaUserDetailsService jpaUserDetailsService;
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
+    private final NoAuthenticationEntryPoint noAuthenticationEntryPoint;
 
     @Autowired
-    public SecurityConfiguration(JpaUserDetailsService jpaUserDetailsService, TokenAuthenticationFilter tokenAuthenticationFilter) {
+    public SecurityConfiguration(JpaUserDetailsService jpaUserDetailsService, TokenAuthenticationFilter tokenAuthenticationFilter, NoAuthenticationEntryPoint noAuthenticationEntryPoint) {
         this.jpaUserDetailsService = jpaUserDetailsService;
         this.tokenAuthenticationFilter = tokenAuthenticationFilter;
+        this.noAuthenticationEntryPoint = noAuthenticationEntryPoint;
     }
 
     @Bean
@@ -53,9 +56,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     antMatchers("/", "/user/**").permitAll().
                     anyRequest().authenticated().
                 and().
-                sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
+                and().
+                exceptionHandling().authenticationEntryPoint(noAuthenticationEntryPoint);
 
         http.addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }

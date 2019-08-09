@@ -72,8 +72,6 @@ public class UserController {
         user.setPassword(encoded);
         User createdUser = userRepository.save(user);
         roleHelper.addRoleTo(createdUser.getUserId(), Role.Roles.USER_ROLE);
-//        Integer returnedUID = userRepository.returnValue(user.getUsername(), user.getPassword());
-//        roleHelper.addRoleTo(returnedUID, Role.Roles.USER_ROLE);
         return new ResponseEntity<>("User created", HttpStatus.OK);
     }
 }

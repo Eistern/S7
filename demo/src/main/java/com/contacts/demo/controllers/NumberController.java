@@ -80,7 +80,7 @@ public class NumberController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity deleteById(@PathVariable("id") @NumberFormat Integer id, @AuthenticationPrincipal UserEntry userEntry) {
-        if (numberRepositoryJPA.existsByPhoneIdAndOwnerUid(id, userEntry.getUid()))
+        if (!numberRepositoryJPA.existsByPhoneIdAndOwnerUid(id, userEntry.getUid()))
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         numberRepositoryJPA.deleteById(id);
         log.info("DeleteById executed. Id=" + id + " deleted");

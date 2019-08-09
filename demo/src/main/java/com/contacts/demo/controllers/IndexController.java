@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 public class IndexController {
     private final Logger log = Logger.getLogger(IndexController.class.getName());
 
-    @GetMapping
+    @GetMapping(path = "/")
     public String index() {
         return "index";
     }
