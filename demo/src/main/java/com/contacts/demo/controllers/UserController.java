@@ -59,7 +59,6 @@ public class UserController {
         String responseToken = JwtUtils.generateToken(userEntry);
 
         CookieUtils.saveCookie(JwtUtils.getCookieName(), responseToken, JwtUtils.getJWT_TOKEN_VALIDITY(), response);
-
         return new ResponseEntity<>(new JwtToken(responseToken), HttpStatus.OK);
     }
 

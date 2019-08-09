@@ -56,19 +56,22 @@ public class NumberController {
 
     @Transactional
     @PatchMapping(path = "/{id}", consumes = "application/json")
-    public ResponseEntity<PhoneNumber> editNumber(@PathVariable("id") @NumberFormat Integer id, @RequestBody @NotEmpty PhoneNumber newNumber, @AuthenticationPrincipal UserEntry userEntry) {
+    public ResponseEntity<PhoneNumber> editNumber(@PathVariable("id") @NumberFormat Integer id, @RequestBody PhoneNumber newNumber, @AuthenticationPrincipal UserEntry userEntry) {
         Optional<PhoneNumber> foundNumber = numberRepositoryJPA.findByPhoneIdAndOwnerUid(id, userEntry.getUid());
         if (foundNumber.isEmpty())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         PhoneNumber editableNumber = foundNumber.get();
         String correctedNumber = editableNumber.getPhoneNumber();
+
         editableNumber.setPhoneNumber(correctedNumber);
 
-        if (newNumber.getPersonId() != null && !nameRepositoryJPA.existsByPersonIdAndUid(newNumber.getPersonId(), userEntry.getUid()))
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        else
-            editableNumber.setPersonId(newNumber.getPersonId());
+        if (newNumber.getPersonId() != null) {
+            if (!nameRepositoryJPA.existsByPersonIdAndUid(newNumber.getPersonId(), userEntry.getUid()))
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            else
+                editableNumber.setPersonId(newNumber.getPersonId());
+        }
 
         if (newNumber.getPhoneNumber() != null)
             editableNumber.setPhoneNumber(newNumber.getPhoneNumber());
