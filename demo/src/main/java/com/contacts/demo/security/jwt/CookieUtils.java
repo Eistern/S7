@@ -15,10 +15,11 @@ public class CookieUtils {
 
     @Nullable
     public static String getValueOf(String name, Cookie[] collection) {
-        for (Cookie cookie : collection) {
-            if (cookie.getName().equals(name))
-                return cookie.getValue();
-        }
+        if (collection != null)
+            for (Cookie cookie : collection) {
+                if (cookie.getName().equals(name))
+                    return cookie.getValue();
+            }
         return null;
     }
 }
