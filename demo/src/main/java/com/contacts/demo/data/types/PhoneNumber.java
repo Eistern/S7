@@ -8,6 +8,7 @@ import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 @Data
+@RequiredArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PACKAGE, force = true)
 @Entity
 @Table(name = "phonenumbers", schema = "public")
