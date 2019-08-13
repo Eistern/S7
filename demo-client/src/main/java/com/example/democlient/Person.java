@@ -13,4 +13,5 @@ import java.io.Serializable;
 public class Person implements Serializable {
     private final String personId;
     private final String name;
+    private final PhoneNumber[] phoneNumbers;
 }
