@@ -5,6 +5,7 @@
     <field name="type" class="com.example.demoreport.types.MessageTypes"><fieldDescription><![CDATA[type]]></fieldDescription></field>
     <field name="personId" class="java.lang.Integer"><fieldDescription><![CDATA[personId]]></fieldDescription></field>
     <field name="name" class="java.lang.String"><fieldDescription><![CDATA[name]]></fieldDescription></field>
+    <field name="timestamp" class="java.util.Date"><fieldDescription><![CDATA[timestamp]]></fieldDescription></field>
 
     <columnHeader>
         <band height = "23">
@@ -22,7 +23,16 @@
             </staticText>
 
             <staticText>
-                <reportElement x = "138" y = "3" width = "121" height = "15" />
+                <reportElement x = "0" y = "3" width = "136" height = "15" />
+
+                <textElement textAlignment = "Center" verticalAlignment = "Middle">
+                    <font isBold = "true" />
+                </textElement>
+
+                <text><![CDATA[timestamp]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x = "207" y = "3" width = "121" height = "15" />
 
                 <textElement textAlignment = "Center" verticalAlignment = "Middle">
                     <font isBold = "true" />
@@ -32,7 +42,7 @@
             </staticText>
 
             <staticText>
-                <reportElement x = "0" y = "3" width = "136" height = "15" />
+                <reportElement x = "103" y = "3" width = "136" height = "15" />
 
                 <textElement textAlignment = "Center" verticalAlignment = "Middle">
                     <font isBold = "true" />
@@ -41,7 +51,7 @@
                 <text><![CDATA[uid]]></text>
             </staticText>
             <staticText>
-                <reportElement x = "276" y = "3" width = "136" height = "15" />
+                <reportElement x = "310" y = "3" width = "136" height = "15" />
 
                 <textElement textAlignment = "Center" verticalAlignment = "Middle">
                     <font isBold = "true" />
@@ -78,7 +88,18 @@
             </staticText>
 
             <textField>
-                <reportElement x = "138" y = "0" width = "121" height = "15" />
+                <reportElement x = "0" y = "0" width = "121" height = "15" />
+
+                <textElement textAlignment = "Center" verticalAlignment = "Middle">
+                    <font size = "9" />
+                </textElement>
+
+                <textFieldExpression class = "java.util.Date">
+                    <![CDATA[$F{timestamp}]]>
+                </textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x = "207" y = "0" width = "121" height = "15" />
 
                 <textElement textAlignment = "Center" verticalAlignment = "Middle">
                     <font size = "9" />
@@ -88,9 +109,8 @@
                     <![CDATA[$F{type}]]>
                 </textFieldExpression>
             </textField>
-
             <textField>
-                <reportElement x = "0" y = "0" width = "136" height = "15" />
+                <reportElement x = "103" y = "0" width = "136" height = "15" />
                 <textElement textAlignment = "Center" verticalAlignment = "Middle" />
 
                 <textFieldExpression class = "java.lang.Integer">
@@ -98,7 +118,7 @@
                 </textFieldExpression>
             </textField>
             <textField>
-                <reportElement x = "276" y = "0" width = "136" height = "15" />
+                <reportElement x = "310" y = "0" width = "136" height = "15" />
                 <textElement textAlignment = "Center" verticalAlignment = "Middle" />
 
                 <textFieldExpression class = "java.lang.Integer">

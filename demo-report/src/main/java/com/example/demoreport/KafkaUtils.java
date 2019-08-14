@@ -12,10 +12,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 @Service
 public class KafkaUtils {
@@ -32,14 +29,14 @@ public class KafkaUtils {
     public List<PersonUpdateMessage> getListOfPersonUpdates() {
         ConsumerRecords<String, PersonUpdateMessage> records = personConsumer.poll(Duration.ofSeconds(10));
         List<PersonUpdateMessage> result = new ArrayList<>();
-        records.forEach(record -> result.add(record.value()));
+        records.forEach(record -> result.add(record.value().setTimestamp(new Date(record.timestamp()))));
         return result;
     }
 
     public List<NumberUpdateMessage> getArrayOfNumberUpdates() {
         ConsumerRecords<String, NumberUpdateMessage> records = numberConsumer.poll(Duration.ofSeconds(10));
         List<NumberUpdateMessage> result = new ArrayList<>();
-        records.forEach(record -> result.add(record.value()));
+        records.forEach(record -> result.add(record.value().setTimestamp(new Date(record.timestamp()))));
         return result;
     }
 

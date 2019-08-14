@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -14,6 +15,7 @@ public class PersonUpdateMessage implements Serializable {
     private final Integer uid;
     private final MessageTypes type;
     private final Person person;
+    private Date timestamp;
 
     public Integer getPersonId() {
         assert person != null;
@@ -23,5 +25,10 @@ public class PersonUpdateMessage implements Serializable {
     public String getName() {
         assert person != null;
         return person.getName();
+    }
+
+    public PersonUpdateMessage setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+        return this;
     }
 }
