@@ -1,7 +1,7 @@
 package com.example.demoreport;
 
-import com.example.demoreport.types.NumberUpdateMessage;
-import com.example.demoreport.types.PersonUpdateMessage;
+import com.contacts.demo.kafka.NumberUpdateMessage;
+import com.contacts.demo.kafka.PersonUpdateMessage;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
