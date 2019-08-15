@@ -2,6 +2,7 @@ package com.example.demoreport;
 
 import com.contacts.demo.kafka.NumberUpdateMessage;
 import com.contacts.demo.kafka.PersonUpdateMessage;
+import com.hazelcast.core.HazelcastInstance;
 import com.zaxxer.hikari.HikariDataSource;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
@@ -32,13 +33,16 @@ public class ReportController {
     private final NameLoggingRep nameRep;
     private final PhoneLoggingRep phoneRep;
     private final HikariDataSource dataSource;
+    private final HazelcastInstance hazelcastInstance;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public ReportController(KafkaUtils kafkaUtils, NameLoggingRep nameRep, PhoneLoggingRep phoneRep, HikariDataSource dataSource) {
+    public ReportController(KafkaUtils kafkaUtils, NameLoggingRep nameRep, PhoneLoggingRep phoneRep, HikariDataSource dataSource, HazelcastInstance hazelcastInstance) {
         this.kafkaUtils = kafkaUtils;
         this.nameRep = nameRep;
         this.phoneRep = phoneRep;
         this.dataSource = dataSource;
+        this.hazelcastInstance = hazelcastInstance;
     }
 
     @KafkaListener(topics = "person-update", clientIdPrefix = "listener", groupId = "person-listeners2")
@@ -47,6 +51,10 @@ public class ReportController {
         updateMessage.setName(updateMessage.getName());
         updateMessage.setPersonId(updateMessage.getPersonId());
         nameRep.save(updateMessage);
+
+        Map<String, Integer> kafkaCount = hazelcastInstance.getMap("kafka-count");
+        Integer count = kafkaCount.getOrDefault("consumed-person", 0);
+        kafkaCount.put("consumed-person", count + 1);
     }
 
     @KafkaListener(topics = "phone-update", clientIdPrefix = "listener", groupId = "phone-listeners2")
@@ -56,6 +64,10 @@ public class ReportController {
         updateMessage.setPersonId(updateMessage.getPersonId());
         updateMessage.setPhoneNumber(updateMessage.getPhoneNumber());
         phoneRep.save(updateMessage);
+
+        Map<String, Integer> kafkaCount = hazelcastInstance.getMap("kafka-count");
+        Integer count = kafkaCount.getOrDefault("consumed-number", 0);
+        kafkaCount.put("consumed-number", count + 1);
     }
 
     @GetMapping(path = "/phone")
@@ -64,17 +76,22 @@ public class ReportController {
         byte[] pdf = compileToPdf(stream, dataSource.getConnection());
         Files.write(Paths.get("number.pdf"), pdf);
 
-        return "Done!";
+        Map<String, Integer> kafkaCount = hazelcastInstance.getMap("kafka-count");
+        Integer produced = kafkaCount.getOrDefault("produced-number", 0);
+        Integer consumed = kafkaCount.getOrDefault("consumed-number", 0);
+        return "Generated report for " + consumed + " out of " + produced + " entries";
     }
 
     @GetMapping(path = "/person")
     public String generatePersonReport() throws IOException, SQLException, JRException {
-
         InputStream stream = this.getClass().getResourceAsStream("/personReport.jrxml");
         byte[] pdf = compileToPdf(stream, dataSource.getConnection());
         Files.write(Paths.get("person.pdf"), pdf);
 
-        return "Done!";
+        Map<String, Integer> kafkaCount = hazelcastInstance.getMap("kafka-count");
+        Integer produced = kafkaCount.getOrDefault("produced-person", 0);
+        Integer consumed = kafkaCount.getOrDefault("consumed-person", 0);
+        return "Generated report for " + consumed + " out of " + produced + " entries";
     }
 
     @GetMapping(path = "/phone/in-memory")
