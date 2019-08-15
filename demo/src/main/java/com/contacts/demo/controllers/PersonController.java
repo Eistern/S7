@@ -64,7 +64,7 @@ public class PersonController {
 
     @Transactional
     @PatchMapping(path = "/{id}", consumes = "application/json")
-    public ResponseEntity<Person> editPerson(@PathVariable("id") @NumberFormat Integer id, @RequestBody @NotEmpty Person newPerson, @AuthenticationPrincipal UserEntry userEntry) {
+    public ResponseEntity<Person> editPerson(@PathVariable("id") @NumberFormat @NotEmpty Integer id, @RequestBody @NotEmpty Person newPerson, @AuthenticationPrincipal UserEntry userEntry) {
         Optional<Person> foundPerson = nameRepositoryJPA.findByPersonIdAndUid(id, userEntry.getUid());
         if (foundPerson.isEmpty())
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
