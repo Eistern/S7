@@ -6,6 +6,7 @@ import com.contacts.demo.data.types.PhoneNumber;
 import com.contacts.demo.kafka.MessageTypes;
 import com.contacts.demo.kafka.NumberUpdateMessage;
 import com.contacts.demo.security.data.types.UserEntry;
+import com.hazelcast.core.HazelcastInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -28,13 +30,16 @@ public class NumberController {
     private final JpaNameRepository nameRepositoryJPA;
     private final Logger log = Logger.getLogger(NumberController.class.getName());
     private final KafkaTemplate<String, NumberUpdateMessage> kafkaUpdate;
+    private final HazelcastInstance hazelcastInstance;
+
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public NumberController(JpaNameRepository jpaNameRepository, JpaNumberRepository jpaNumberRepository, KafkaTemplate<String, NumberUpdateMessage> kafkaUpdate) {
+    public NumberController(JpaNameRepository jpaNameRepository, JpaNumberRepository jpaNumberRepository, KafkaTemplate<String, NumberUpdateMessage> kafkaUpdate, HazelcastInstance hazelcastInstance) {
         this.numberRepositoryJPA = jpaNumberRepository;
         this.nameRepositoryJPA = jpaNameRepository;
         this.kafkaUpdate = kafkaUpdate;
+        this.hazelcastInstance = hazelcastInstance;
     }
 
     @GetMapping
@@ -51,6 +56,7 @@ public class NumberController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         kafkaUpdate.send(TOPIC, new NumberUpdateMessage(MessageTypes.ACCESS, userEntry.getUid(), result.get()));
+        incrementProduced();
         log.info("ShowNumberById executed with Id=" + id);
         return new ResponseEntity<>(result.get(), HttpStatus.OK);
     }
@@ -60,6 +66,7 @@ public class NumberController {
         numberRepositoryJPA.save(newNumber);
 
         kafkaUpdate.send(TOPIC, new NumberUpdateMessage(MessageTypes.CREATED, userEntry.getUid(), newNumber));
+        incrementProduced();
         log.info("AddNumber executed " + newNumber + " added");
         return newNumber;
     }
@@ -88,6 +95,7 @@ public class NumberController {
         PhoneNumber resultedNumber = numberRepositoryJPA.save(editableNumber);
 
         kafkaUpdate.send(TOPIC, new NumberUpdateMessage(MessageTypes.UPDATE, userEntry.getUid(), resultedNumber));
+        incrementProduced();
         log.info("EditNumber executed. Id=" + id + " updated. Now: " + resultedNumber);
         return new ResponseEntity<>(resultedNumber, HttpStatus.OK);
     }
@@ -99,7 +107,14 @@ public class NumberController {
         numberRepositoryJPA.deleteById(id);
 
         kafkaUpdate.send(TOPIC, new NumberUpdateMessage(MessageTypes.DELETE, userEntry.getUid(), new PhoneNumber(id)));
+        incrementProduced();
         log.info("DeleteById executed. Id=" + id + " deleted");
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    private void incrementProduced() {
+        Map<String, Integer> kafkaCount = hazelcastInstance.getMap("kafka-count");
+        Integer sentCount = kafkaCount.getOrDefault("produced-number", 0);
+        kafkaCount.put("produced-number", sentCount + 1);
     }
 }
