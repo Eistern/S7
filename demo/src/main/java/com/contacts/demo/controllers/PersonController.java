@@ -8,7 +8,15 @@ import com.contacts.demo.kafka.MessageTypes;
 import com.contacts.demo.kafka.PersonUpdateMessage;
 import com.contacts.demo.security.data.types.UserEntry;
 import com.hazelcast.core.HazelcastInstance;
+import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.index.query.Operator;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RegexpQueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,14 +43,17 @@ public class PersonController {
     private final KafkaTemplate<String, PersonUpdateMessage> kafkaUpdate;
     private final HazelcastInstance hazelcastInstance;
     private final SearchRepository searchRepository;
+    private final ElasticsearchTemplate elasticsearchTemplate;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    public PersonController(JpaNameRepository nameRepositoryJPA, KafkaTemplate<String, PersonUpdateMessage> kafkaUpdate, HazelcastInstance hazelcastInstance, SearchRepository searchRepository) {
+    public PersonController(JpaNameRepository nameRepositoryJPA, KafkaTemplate<String, PersonUpdateMessage> kafkaUpdate, HazelcastInstance hazelcastInstance, SearchRepository searchRepository, ElasticsearchTemplate elasticsearchTemplate) {
         this.nameRepositoryJPA = nameRepositoryJPA;
         this.kafkaUpdate = kafkaUpdate;
         this.hazelcastInstance = hazelcastInstance;
         this.searchRepository = searchRepository;
+        this.elasticsearchTemplate = elasticsearchTemplate;
+        elasticsearchTemplate.createIndex(PersonSearchEntity.class);
     }
 
     @GetMapping
@@ -71,8 +82,8 @@ public class PersonController {
         newPerson.setUid(userEntry.getUid());
         Person result = nameRepositoryJPA.save(newPerson);
 
-        PersonSearchEntity searchEntity = new PersonSearchEntity(null, result.getPersonId(), result.getName());
-        searchRepository.save(searchEntity);
+        PersonSearchEntity searchEntity = new PersonSearchEntity(result.getPersonId(), result.getName());
+        PersonSearchEntity test = searchRepository.save(searchEntity);
 
         kafkaUpdate.send(TOPIC, new PersonUpdateMessage(MessageTypes.CREATED, userEntry.getUid(), newPerson));
         incrementProduced();
@@ -97,7 +108,7 @@ public class PersonController {
 
         Optional<PersonSearchEntity> searchEntity = searchRepository.findById(id);
         if (searchEntity.isEmpty())
-            searchRepository.save(new PersonSearchEntity(null, resultedPerson.getPersonId(), resultedPerson.getName()));
+            searchRepository.save(new PersonSearchEntity(resultedPerson.getPersonId(), resultedPerson.getName()));
         else {
             PersonSearchEntity foundEntity = searchEntity.get();
             foundEntity.setName(resultedPerson.getName());
@@ -113,13 +124,22 @@ public class PersonController {
 
     @GetMapping("/search")
     public ResponseEntity<List<Person>> searchPersons(String name, @AuthenticationPrincipal UserEntry userEntry) {
-        List<PersonSearchEntity> searchEntities = searchRepository.findByName(name);
+        SearchQuery query = new NativeSearchQueryBuilder().withQuery(
+                QueryBuilders.boolQuery().should(QueryBuilders.matchQuery("name", name).operator(Operator.AND)
+                        .autoGenerateSynonymsPhraseQuery(true)
+                        .operator(Operator.AND)
+                        .analyzer("english")
+                        .operator(Operator.AND)
+                        .fuzziness(Fuzziness.ONE)
+                        .prefixLength(3)))
+                .build();
+        List<PersonSearchEntity> searchEntities = elasticsearchTemplate.queryForList(query, PersonSearchEntity.class);
         if (searchEntities == null)
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         List<Person> searchResults = new ArrayList<>();
         searchEntities.forEach(personSearchEntity -> {
-            ResponseEntity<Person> getResult = showPersonById(personSearchEntity.getId(), userEntry);
+            ResponseEntity<Person> getResult = showPersonById(personSearchEntity.getPersonId(), userEntry);
             if (getResult.getStatusCode() == HttpStatus.OK)
                 searchResults.add(getResult.getBody());
         });

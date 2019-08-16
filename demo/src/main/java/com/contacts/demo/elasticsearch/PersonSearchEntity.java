@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Data
 @NoArgsConstructor
@@ -12,7 +14,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 @Document(indexName = "contacts", type = "persons")
 public class PersonSearchEntity {
     @Id
-    private Integer id;
     private Integer personId;
+    @Field(type = FieldType.Text, analyzer = "english")
     private String name;
 }
