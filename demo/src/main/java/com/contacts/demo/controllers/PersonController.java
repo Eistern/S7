@@ -130,8 +130,7 @@ public class PersonController {
                         .operator(Operator.AND)
                         .analyzer("english")
                         .operator(Operator.AND)
-                        .fuzziness(Fuzziness.ONE)
-                        .prefixLength(3)))
+                        .fuzziness(Fuzziness.ONE)))
                 .build();
         List<PersonSearchEntity> searchEntities = elasticsearchTemplate.queryForList(query, PersonSearchEntity.class);
         if (searchEntities == null)

@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDa
 import java.io.IOException;
 import java.util.logging.LogManager;
 
-//@SpringBootApplication
 @SpringBootApplication(exclude = {ElasticsearchAutoConfiguration.class, ElasticsearchDataAutoConfiguration.class})
 public class DemoApplication {
 
